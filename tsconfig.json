@@ -1,0 +1,8 @@
+{
+  "extends": "@subframe7536/type-utils/tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "bun-types"
+    ]
+  }
+}
