@@ -30,10 +30,7 @@ export const defaultDeserializer: Deserializer = (parameter) => {
       return false
     } else if (dateRegex.test(parameter)) {
       return new Date(parameter)
-    } else if (
-      (parameter.startsWith('{') && parameter.endsWith('}'))
-      || (parameter.startsWith('[') && parameter.endsWith(']'))
-    ) {
+    } else if (maybeJson(parameter)) {
       try {
         return JSON.parse(parameter)
       } catch { }
@@ -43,9 +40,32 @@ export const defaultDeserializer: Deserializer = (parameter) => {
 }
 
 /**
- * check if the parameter does not need to be transformed
+ * Checks if a given string parameter is a JSON-like string.
  *
- * skip type: `undefined`/`null`, `bigint`/`number`, `ArrayBuffer`/`Buffer`
+ * This function determines if the input string starts and ends with
+ * curly braces `{}` or square brackets `[]`, which are typical indicators
+ * of JSON objects and arrays respectively.
+ *
+ * @param parameter - The string to be checked.
+ * @returns `true` if the string is JSON-like, otherwise `false`.
+ */
+export function maybeJson(parameter: string): boolean {
+  return (parameter.startsWith('{') && parameter.endsWith('}'))
+    || (parameter.startsWith('[') && parameter.endsWith(']'))
+}
+
+/**
+ * Determines whether a given parameter should be skipped during transformation.
+ *
+ * @param parameter - The parameter to check.
+ * @returns `true` if the parameter should be skipped; otherwise, `false`.
+ *
+ * The parameter will be skipped if it meets any of the following conditions:
+ * - It is `undefined`.
+ * - It is `null`.
+ * - It is of type `bigint`.
+ * - It is of type `number`.
+ * - It is an object that contains a `buffer` property.
  */
 export function skipTransform(parameter: unknown): boolean {
   return parameter === undefined

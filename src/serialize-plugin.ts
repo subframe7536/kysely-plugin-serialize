@@ -12,21 +12,6 @@ import type { Deserializer, Serializer } from './serializer'
 import { SerializeParametersTransformer } from './serialize-transformer'
 import { defaultDeserializer, defaultSerializer } from './serializer'
 
-export interface BaseSerializePluginOptions {
-  /**
-   * serialize params
-   */
-  serializer: Serializer
-  /**
-   * deserialize params
-   */
-  deserializer: Deserializer
-  /**
-   * node kind to skip transform
-   */
-  skipNodeKind: Array<RootOperationNode['kind']>
-}
-
 export class BaseSerializePlugin implements KyselyPlugin {
   private transformer: SerializeParametersTransformer
   private deserializer: Deserializer
@@ -36,7 +21,11 @@ export class BaseSerializePlugin implements KyselyPlugin {
   /**
    * Base class for {@link SerializePlugin}, without default options
    */
-  public constructor({ deserializer, serializer, skipNodeKind }: BaseSerializePluginOptions) {
+  public constructor(
+    serializer: Serializer,
+    deserializer: Deserializer,
+    skipNodeKind: Array<RootOperationNode['kind']>,
+  ) {
     this.transformer = new SerializeParametersTransformer(serializer)
     this.deserializer = deserializer
     if (skipNodeKind.length) {
@@ -74,7 +63,19 @@ export class BaseSerializePlugin implements KyselyPlugin {
   }
 }
 
-export interface SerializePluginOptions extends Partial<BaseSerializePluginOptions> {
+export interface SerializePluginOptions {
+  /**
+   * serialize params
+   */
+  serializer?: Serializer
+  /**
+   * deserialize params
+   */
+  deserializer?: Deserializer
+  /**
+   * node kind to skip transform
+   */
+  skipNodeKind?: Array<RootOperationNode['kind']>
 }
 
 export class SerializePlugin extends BaseSerializePlugin {
@@ -140,10 +141,12 @@ export class SerializePlugin extends BaseSerializePlugin {
    * ```
    */
   public constructor(options: SerializePluginOptions = {}) {
-    options.deserializer ??= defaultDeserializer
-    options.serializer ??= defaultSerializer
-    options.skipNodeKind ??= []
-    super(options as BaseSerializePluginOptions)
+    const {
+      deserializer = defaultDeserializer,
+      serializer = defaultSerializer,
+      skipNodeKind = [],
+    } = options
+    super(serializer, deserializer, skipNodeKind)
   }
 }
 

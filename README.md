@@ -17,6 +17,9 @@ pnpm add kysely kysely-plugin-serialize
 The following example will return an error when using sqlite dialects, unless using this plugin:
 
 ```ts
+import { Kysely, SqliteDialect } from 'kysely'
+import { SerializePlugin } from 'kysely-plugin-serialize'
+
 interface TestTable {
   id: Generated<number>
   person: { name: string, age: number, time: Date } | null
@@ -49,6 +52,9 @@ await db.insertInto('test').values({
 You can also provide a custom serializer function:
 
 ```ts
+import { Kysely, SqliteDialect } from 'kysely'
+import { SerializePlugin } from 'kysely-plugin-serialize'
+
 const db = new Kysely<Database>({
   dialect: new SqliteDialect({
     database: new Database(':memory:'),
@@ -69,6 +75,52 @@ const db = new Kysely<Database>({
     }),
   ],
 })
+```
+
+### Base plugin
+
+If you want to reduce your production size, you can use basic plugin
+
+```ts
+import {
+  BaseSerializePlugin,
+  dateRegex,
+  type Deserializer,
+  maybeJson,
+  type Serializer,
+  skipTransform as skip,
+} from 'kysely-plugin-serialize'
+
+const skipTransform = (parameter: unknown): boolean => skip(parameter) || typeof parameter === 'boolean'
+
+const serializer: Serializer = (parameter) => {
+  if (skipTransform(parameter) || typeof parameter === 'string') {
+    return parameter
+  }
+  try {
+    return JSON.stringify(parameter)
+  } catch {
+    return parameter
+  }
+}
+
+const deserializer: Deserializer = (parameter) => {
+  if (skipTransform(parameter)) {
+    return parameter
+  }
+  if (typeof parameter === 'string') {
+    if (dateRegex.test(parameter)) {
+      return new Date(parameter)
+    } else if (maybeJson(parameter)) {
+      try {
+        return JSON.parse(parameter)
+      } catch { }
+    }
+  }
+  return parameter
+}
+
+const plugin = new BaseSerializePlugin(serializer, deserializer, [])
 ```
 
 ## Notice
