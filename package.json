@@ -2,7 +2,7 @@
   "name": "kysely-plugin-serialize",
   "type": "module",
   "version": "0.7.0",
-  "description": "kysely serialize plugin",
+  "description": "Auto serialize / deserialize plugin for kysely",
   "author": {
     "name": "subframe7536",
     "email": "1667077010@qq.com"
