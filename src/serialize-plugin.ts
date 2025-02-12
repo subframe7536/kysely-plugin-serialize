@@ -53,6 +53,9 @@ export class BaseSerializePlugin implements KyselyPlugin {
   private parseRows(rows: UnknownRow[]): UnknownRow[] {
     const result: UnknownRow[] = []
     for (const row of rows) {
+      if (!row) {
+        continue
+      }
       const parsedRow: UnknownRow = {}
       for (const [key, value] of Object.entries(row)) {
         parsedRow[key] = this.deserializer(value)
